@@ -1,17 +1,16 @@
 package com.mindex.gaea.gateway;
 
 import org.junit.Test;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.mindex.gaea.gateway.module.ServerModule;
+import com.mindex.gaea.gateway.server.GateWayServer;
 
 public class GateWayServerTest {
 
 	@Test
 	public void GuiceTest() {
-		Injector injector = Guice.createInjector(new ServerModule());
-		GateWayServer server = injector.getInstance(GateWayServer.class);
-		server.route();
+
+		
 	}
 }

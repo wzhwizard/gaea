@@ -1,5 +1,8 @@
 package com.mindex.gaea.gateway.discovery;
 
+import org.springframework.stereotype.Service;
+
+@Service
 public class DynamicDiscoveryService implements DicoverySevice {
 
 	public String[] getIPList() {
