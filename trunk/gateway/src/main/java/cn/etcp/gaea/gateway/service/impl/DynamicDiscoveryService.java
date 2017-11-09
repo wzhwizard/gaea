@@ -1,6 +1,8 @@
-package com.mindex.gaea.gateway.discovery;
+package cn.etcp.gaea.gateway.service.impl;
 
 import org.springframework.stereotype.Service;
+
+import cn.etcp.gaea.gateway.service.DicoverySevice;
 
 @Service
 public class DynamicDiscoveryService implements DicoverySevice {
