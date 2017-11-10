@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO" packages="cn.etcp.datacollection">
+    <Properties>
+        <Property name="baseDir">/home/etcp/log/dataCollection</Property>
+    </Properties>
+    <Appenders>
+        <Console name="STDOUT" target="SYSTEM_OUT">
+            <PatternLayout>
+                <Pattern>%d %p %c{1.} %X{req} %m%n%ex</Pattern>
+            </PatternLayout>
+        </Console>
+        <RollingRandomAccessFile name="INFO_ROLLING_FILE"
+                                 fileName="${baseDir}/app-info.log"
+                                 filePattern="${baseDir}/dataCollection-%d{yyyy-MM-dd}-%i.info-log.gz"
+                                 immediateFlush="false" append="false">
+            <PatternLayout>
+                <Pattern>%d %p %c{1.} %X{req} %m%n%ex</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="250 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="100">
+                <Delete basePath="${baseDir}" maxDepth="2">
+                    <IfFileName glob="*/dataCollection-*.info-log.gz">
+                        <IfLastModified age="10d">
+                            <IfAny>
+                                <IfAccumulatedFileSize exceeds="30 GB"/>
+                                <IfAccumulatedFileCount exceeds="10"/>
+                            </IfAny>
+                        </IfLastModified>
+                    </IfFileName>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingRandomAccessFile>
+    </Appenders>
+    <Loggers>
+        <Root level="info" includeLocation="false">
+            <AppenderRef ref="STDOUT"/>
+            <AppenderRef ref="INFO_ROLLING_FILE"/>
+        </Root>
+        <Logger name="cn.etcp.datacollection.dao" level="TRACE" additivity="false">
+            <AppenderRef ref="STDOUT"/>
+        </Logger>
+    </Loggers>
+</Configuration>
