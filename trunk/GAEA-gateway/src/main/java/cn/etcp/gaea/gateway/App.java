@@ -11,5 +11,6 @@ public class App {
 		SpringApplication app = new SpringApplication(App.class);
 		app.setBannerMode(Mode.LOG);
 		app.run(args);
+		
 	}
 }

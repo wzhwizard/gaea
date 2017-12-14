@@ -1,46 +1,67 @@
 package cn.etcp.gaea.gateway.service.impl;
 
-import java.util.concurrent.ConcurrentHashMap;
-
 import javax.annotation.Resource;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 
-import cn.etcp.gaea.gateway.bean.EndPoint;
 import cn.etcp.gaea.gateway.service.GateWayService;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
+import io.vertx.ext.web.client.WebClient;
+import io.vertx.servicediscovery.ServiceDiscovery;
+import io.vertx.servicediscovery.ServiceReference;
 
 @Service
 public class VertxGateWayService implements GateWayService, InitializingBean {
 
 	@Resource
-	HttpClient httpClient;
-	@Resource
 	HttpServer httpServer;
+	@Resource
+	ServiceDiscovery serviceDiscovery;
 
 	public void afterPropertiesSet() throws Exception {
-		ConcurrentHashMap<String, EndPoint> dispatcher = new ConcurrentHashMap<>();
-		dispatcher.put("weather", new EndPoint(8793, "10.103.22.93", HttpMethod.GET, "/service/o/p/list"));
+
 		httpServer.requestHandler(request -> {
 			try {
 				String target = request.getHeader("target");
-				EndPoint point = dispatcher.get(target);
-				String targetURL = point.getRequestURI() + (request.query() == null ? "" : "?" + request.query());
-				HttpClientRequest cRequest = httpClient.request(point.getMethod(), point.getPort(), point.getHost(),
-						targetURL, response -> {
-							request.response().headers().addAll(response.headers());
-							request.response().setChunked(true);
-							response.bodyHandler(body -> {
-								request.response().end(body);
+				serviceDiscovery.getRecord(r -> r.getName().equals(target), ar -> {
+					if (ar.succeeded()) {
+						if (ar.result() != null) {
+							String targetURL = request.path() + (request.query() == null ? "" : "?" + request.query());
+							request.bodyHandler(body -> {
+								System.out.println(body);
+								ServiceReference reference = null;
+								try {
+									reference = serviceDiscovery.getReference(ar.result());
+									WebClient client = reference.getAs(WebClient.class);
+									client.request(HttpMethod.GET, targetURL).sendBuffer(body, e -> {
+										if (e.succeeded()) {
+											if (e.result() != null) {
+												request.response().headers().addAll(e.result().headers());
+												request.response().end(e.result().body());
+											} else {
+											}
+										} else {
+											System.out.println(e.cause());
+										}
+										;
+									});
+								} catch (Throwable tt) {
+									tt.printStackTrace();
+								} finally {
+									if (reference != null)
+										reference.release();
+								}
 							});
 
-						});
-				System.out.println(cRequest.absoluteURI());
-				cRequest.end();
+						} else {
+						}
+					} else {
+					}
+
+				});
+
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
